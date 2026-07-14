@@ -30,11 +30,20 @@ Open the local URL Vite prints (typically `http://localhost:5173`).
 
 ## GitHub Pages
 
-This is a **Vite/React** site (not Jekyll). Do **not** set Pages source to `/docs`.
+This is a **Vite/React** site (not Jekyll). The production build outputs to `/docs`.
 
-1. Push the workflow in `.github/workflows/deploy-pages.yml`.
-2. Repo **Settings → Pages → Build and deployment → Source**: choose **GitHub Actions**.
-3. Site URL: `https://raadhegreensolutions.github.io/` (root domain — `base: '/'` in Vite)
+### Recommended: GitHub Actions
+1. Push `.github/workflows/deploy-pages.yml`.
+2. **Settings → Pages → Source**: **GitHub Actions**.
+
+### Alternative: deploy from branch
+1. Run `npm run build` (writes to `docs/`).
+2. Commit and push the `docs/` folder.
+3. **Settings → Pages → Source**: **Deploy from a branch** → `main` → folder **`/docs`** (not `/` root).
+
+Do **not** publish from `/` (root) — that serves Vite source (`main.tsx`) and breaks the site.
+
+Site URL: `https://raadhegreensolutions.github.io/`
 
 ## Sections
 
