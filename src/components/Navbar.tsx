@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Leaf } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import clsx from 'clsx'
 import { navLinks } from '../data/content'
 import { MagneticButton } from './ui/MagneticButton'
+import { BrandLogo } from './BrandLogo'
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -44,14 +45,11 @@ export function Navbar() {
       )}
     >
       <div className="section-pad container-max flex items-center justify-between">
-        <a href="#hero" className="group flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient shadow-[var(--shadow-glow)]">
-            <Leaf className="h-4.5 w-4.5 text-white" strokeWidth={2.2} />
-          </span>
-          <span className="font-heading text-sm font-bold tracking-tight text-white sm:text-base">
-            Raadhe Green
-            <span className="hidden text-muted sm:inline"> Solutions</span>
-          </span>
+        <a href="#hero" className="group flex shrink-0 items-center">
+          <BrandLogo
+            priority
+            className="h-10 w-auto rounded-lg shadow-[0_0_24px_rgba(212,175,55,0.18)] transition-transform duration-300 group-hover:scale-[1.03] sm:h-12 md:h-14"
+          />
         </a>
 
         <nav className="hidden items-center gap-1 lg:flex">

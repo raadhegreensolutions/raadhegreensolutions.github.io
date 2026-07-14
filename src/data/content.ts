@@ -224,7 +224,16 @@ export const testimonials = [
 ]
 
 export const contactInfo = {
-  email: 'hello@raadhegreensolutions.com',
-  phone: '+91 79 4000 2200',
-  address: 'Raadhe Green Tower, SG Highway, Ahmedabad, Gujarat 380054',
+  email: 'vishaldhatrak11@gmail.com',
+  phone: '+91 7350291173',
+  address: 'Nashik',
+  /** Digits only for wa.me links */
+  whatsapp: '917350291173',
+  mapEmbedUrl:
+    'https://www.google.com/maps?q=Nashik,Maharashtra,India&z=12&output=embed',
+  mapLink: 'https://www.google.com/maps/search/?api=1&query=Nashik,Maharashtra,India',
 }
+
+export const whatsappLink = `https://wa.me/${contactInfo.whatsapp}?text=${encodeURIComponent(
+  'Hi Raadhe Green Solutions, I would like to know more about your services.',
+)}`

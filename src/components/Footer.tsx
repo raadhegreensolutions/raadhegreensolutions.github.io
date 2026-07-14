@@ -1,5 +1,5 @@
-import { Leaf } from 'lucide-react'
-import { navLinks } from '../data/content'
+import { contactInfo, navLinks } from '../data/content'
+import { BrandLogo } from './BrandLogo'
 
 export function Footer() {
   return (
@@ -8,13 +8,8 @@ export function Footer() {
       <div className="section-pad container-max py-14 md:py-16">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <a href="#hero" className="mb-4 inline-flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient">
-                <Leaf className="h-4 w-4 text-white" />
-              </span>
-              <span className="font-heading text-base font-bold text-white">
-                Raadhe Green Solutions
-              </span>
+            <a href="#hero" className="mb-4 inline-flex items-center">
+              <BrandLogo className="h-20 w-auto rounded-xl sm:h-24" />
             </a>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
               Transforming waste into sustainable value through integrated
@@ -46,10 +41,18 @@ export function Footer() {
             </p>
             <ul className="space-y-2 text-sm text-white/65">
               <li>Raadhe Green Solutions Pvt. Ltd.</li>
-              <li>Ahmedabad, Gujarat</li>
+              <li>{contactInfo.address}</li>
               <li>
-                <a href="mailto:hello@raadhegreensolutions.com" className="hover:text-primary-light">
-                  hello@raadhegreensolutions.com
+                <a href={`mailto:${contactInfo.email}`} className="hover:text-primary-light">
+                  {contactInfo.email}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`tel:${contactInfo.phone.replace(/\s/g, '')}`}
+                  className="hover:text-primary-light"
+                >
+                  {contactInfo.phone}
                 </a>
               </li>
             </ul>

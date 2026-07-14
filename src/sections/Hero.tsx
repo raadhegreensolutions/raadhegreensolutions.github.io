@@ -100,7 +100,7 @@ export function Hero() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-            Raadhe Green Solutions
+            Raadhe Green Solutions Pvt. Ltd.
           </motion.p>
 
           <motion.h1

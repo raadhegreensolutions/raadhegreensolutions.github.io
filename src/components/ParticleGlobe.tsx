@@ -33,32 +33,33 @@ const earthFragment = /* glsl */ `
 
   void main() {
     vec3 normal = normalize(vWorldNormal);
-    // Subtle bump from topology (grayscale height)
     float h = texture2D(uBump, vUv).r;
     float h2 = texture2D(uBump, vUv + vec2(0.002, 0.0)).r;
     float h3 = texture2D(uBump, vUv + vec2(0.0, 0.002)).r;
-    normal = normalize(normal + vec3(h - h2, h - h3, 0.0) * 0.65);
+    normal = normalize(normal + vec3(h - h2, h - h3, 0.0) * 0.45);
 
     vec3 viewDir = normalize(cameraPosition - vWorldPos);
     float lambert = dot(normal, uSunDirection);
-    float dayMix = smoothstep(-0.08, 0.45, lambert);
+    // Soft terminator — keep the dark side readable, not black
+    float dayMix = smoothstep(-0.35, 0.55, lambert);
 
-    vec3 dayColor = texture2D(uDay, vUv).rgb;
-    vec3 nightColor = texture2D(uNight, vUv).rgb;
+    vec3 dayColor = texture2D(uDay, vUv).rgb * 1.38;
+    // Lift oceans toward a fresher light blue
+    dayColor = mix(dayColor, vec3(0.45, 0.72, 0.98), 0.14);
+    vec3 nightTex = texture2D(uNight, vUv).rgb;
+    vec3 nightSide = dayColor * 0.55 + nightTex * vec3(1.3, 1.15, 0.95) * 0.4;
+    vec3 color = mix(nightSide, dayColor, dayMix);
 
-    // Boost city lights on the night side
-    vec3 nightLit = nightColor * vec3(1.15, 1.05, 0.85) * 1.35;
-    vec3 color = mix(nightLit, dayColor, dayMix);
+    color += dayColor * 0.3;
+    color *= vec3(0.92, 1.02, 1.12); // gentle cool/light-blue grade
 
-    // Ocean specular highlights
     float water = texture2D(uSpecular, vUv).r;
     vec3 halfDir = normalize(uSunDirection + viewDir);
-    float spec = pow(max(dot(normal, halfDir), 0.0), 48.0);
-    color += vec3(0.55, 0.7, 0.95) * spec * water * dayMix * 0.85;
+    float spec = pow(max(dot(normal, halfDir), 0.0), 28.0);
+    color += vec3(0.75, 0.9, 1.0) * spec * water * dayMix * 0.32;
 
-    // Soft atmospheric edge on the lit limb
-    float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), 2.8);
-    color += vec3(0.35, 0.65, 1.0) * fresnel * (0.12 + dayMix * 0.22);
+    float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), 2.5);
+    color += vec3(0.55, 0.78, 1.0) * fresnel * 0.22;
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -83,57 +84,13 @@ const atmosphereFragment = /* glsl */ `
   void main() {
     float fresnel = pow(1.0 - abs(dot(normalize(vView), normalize(vNormal))), 2.2);
     float intensity = fresnel * 0.85;
-    vec3 glow = mix(vec3(0.15, 0.45, 1.0), vec3(0.55, 0.85, 1.0), fresnel);
+    vec3 glow = mix(vec3(0.35, 0.65, 1.0), vec3(0.7, 0.9, 1.0), fresnel);
     gl_FragColor = vec4(glow, intensity);
   }
 `
 
-function createCloudTexture(size = 1024) {
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')!
-  ctx.clearRect(0, 0, size, size)
-
-  // Soft cloud blobs
-  for (let i = 0; i < 2200; i++) {
-    const x = Math.random() * size
-    const y = Math.random() * size
-    const r = 6 + Math.random() * 48
-    const a = 0.015 + Math.random() * 0.07
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r)
-    g.addColorStop(0, `rgba(255,255,255,${a})`)
-    g.addColorStop(1, 'rgba(255,255,255,0)')
-    ctx.fillStyle = g
-    ctx.beginPath()
-    ctx.arc(x, y, r, 0, Math.PI * 2)
-    ctx.fill()
-  }
-
-  // Band / storm streaks
-  for (let i = 0; i < 40; i++) {
-    const y = Math.random() * size
-    const h = 8 + Math.random() * 28
-    const grad = ctx.createLinearGradient(0, y, size, y)
-    const a = 0.04 + Math.random() * 0.06
-    grad.addColorStop(0, 'rgba(255,255,255,0)')
-    grad.addColorStop(0.5, `rgba(255,255,255,${a})`)
-    grad.addColorStop(1, 'rgba(255,255,255,0)')
-    ctx.fillStyle = grad
-    ctx.fillRect(0, y, size, h)
-  }
-
-  const tex = new THREE.CanvasTexture(canvas)
-  tex.colorSpace = THREE.SRGBColorSpace
-  tex.wrapS = THREE.RepeatWrapping
-  tex.wrapT = THREE.ClampToEdgeWrapping
-  tex.anisotropy = 8
-  return tex
-}
-
 function Earth({ reducedDetail }: { reducedDetail: boolean }) {
   const group = useRef<THREE.Group>(null)
-  const cloudsRef = useRef<THREE.Mesh>(null)
   const earthMat = useRef<THREE.ShaderMaterial>(null)
 
   const base = import.meta.env.BASE_URL
@@ -150,8 +107,6 @@ function Earth({ reducedDetail }: { reducedDetail: boolean }) {
   nightMap.anisotropy = 8
   bumpMap.anisotropy = 8
 
-  const cloudMap = useMemo(() => createCloudTexture(reducedDetail ? 512 : 1024), [reducedDetail])
-
   const earthUniforms = useMemo(
     () => ({
       uDay: { value: dayMap },
@@ -167,7 +122,6 @@ function Earth({ reducedDetail }: { reducedDetail: boolean }) {
 
   useFrame((_, delta) => {
     if (group.current) group.current.rotation.y += delta * 0.08
-    if (cloudsRef.current) cloudsRef.current.rotation.y += delta * 0.11
   })
 
   return (
@@ -182,21 +136,6 @@ function Earth({ reducedDetail }: { reducedDetail: boolean }) {
         />
       </mesh>
 
-      {/* Cloud layer */}
-      <mesh ref={cloudsRef} scale={1.018}>
-        <sphereGeometry args={[1.35, segments, segments]} />
-        <meshStandardMaterial
-          map={cloudMap}
-          transparent
-          opacity={reducedDetail ? 0.35 : 0.48}
-          depthWrite={false}
-          roughness={1}
-          metalness={0}
-          side={THREE.FrontSide}
-        />
-      </mesh>
-
-      {/* Atmosphere shell */}
       <mesh scale={1.055}>
         <sphereGeometry args={[1.35, 48, 48]} />
         <shaderMaterial
@@ -209,13 +148,12 @@ function Earth({ reducedDetail }: { reducedDetail: boolean }) {
         />
       </mesh>
 
-      {/* Soft outer haze */}
       <mesh scale={1.1}>
         <sphereGeometry args={[1.35, 32, 32]} />
         <meshBasicMaterial
-          color="#5aa8ff"
+          color="#7ec4ff"
           transparent
-          opacity={0.06}
+          opacity={0.08}
           side={THREE.BackSide}
           depthWrite={false}
         />
@@ -227,13 +165,13 @@ function Earth({ reducedDetail }: { reducedDetail: boolean }) {
 function Scene({ reducedDetail }: { reducedDetail: boolean }) {
   return (
     <>
-      <ambientLight intensity={0.12} />
+      <ambientLight intensity={0.78} />
       <directionalLight
         position={[SUN.x * 6, SUN.y * 6, SUN.z * 6]}
-        intensity={2.1}
-        color="#fff4e5"
+        intensity={2.85}
+        color="#ffffff"
       />
-      <directionalLight position={[-4, -1, -3]} intensity={0.15} color="#1a3a6e" />
+      <directionalLight position={[-3, 1, -2]} intensity={0.85} color="#b8d8ff" />
       <Suspense fallback={null}>
         <Earth reducedDetail={reducedDetail} />
       </Suspense>
@@ -280,7 +218,7 @@ export function ParticleGlobe({ className }: { className?: string }) {
             alpha: true,
             powerPreference: 'high-performance',
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.05,
+            toneMappingExposure: 1.65,
           }}
           style={{ width: '100%', height: '100%' }}
         >
