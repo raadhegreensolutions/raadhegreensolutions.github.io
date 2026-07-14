@@ -34,7 +34,7 @@ This is a **Vite/React** site (not Jekyll). Do **not** set Pages source to `/doc
 
 1. Push the workflow in `.github/workflows/deploy-pages.yml`.
 2. Repo **Settings → Pages → Build and deployment → Source**: choose **GitHub Actions**.
-3. Site URL: `https://raadhegreensolutions.github.io/raadhegreensolutions/`
+3. Site URL: `https://raadhegreensolutions.github.io/` (root domain — `base: '/'` in Vite)
 
 ## Sections
 

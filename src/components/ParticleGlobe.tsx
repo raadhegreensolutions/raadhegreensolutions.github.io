@@ -1,93 +1,109 @@
-import { useMemo, useRef, Suspense } from 'react'
+import { useRef, Suspense } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { useIsMobile, usePrefersReducedMotion } from '../hooks/useMediaQuery'
 
-function ParticleSphere({ count }: { count: number }) {
-  const pointsRef = useRef<THREE.Points>(null)
-  const materialRef = useRef<THREE.PointsMaterial>(null)
+function Earth({ reducedDetail }: { reducedDetail: boolean }) {
+  const group = useRef<THREE.Group>(null)
+  const clouds = useRef<THREE.Mesh>(null)
 
-  const { positions, colors } = useMemo(() => {
-    const positions = new Float32Array(count * 3)
-    const colors = new Float32Array(count * 3)
-    const grey = new THREE.Color('#6b7280')
-    const green = new THREE.Color('#2E7D32')
-    const blue = new THREE.Color('#0B3D91')
+  const [colorMap, bumpMap] = useTexture([
+    `${import.meta.env.BASE_URL}earth/day.jpg`,
+    `${import.meta.env.BASE_URL}earth/topology.png`,
+  ])
 
-    for (let i = 0; i < count; i++) {
-      const u = Math.random()
-      const v = Math.random()
-      const theta = 2 * Math.PI * u
-      const phi = Math.acos(2 * v - 1)
-      const r = 1.55 + (Math.random() - 0.5) * 0.12
+  colorMap.colorSpace = THREE.SRGBColorSpace
+  colorMap.anisotropy = 8
 
-      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
-      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
-      positions[i * 3 + 2] = r * Math.cos(phi)
+  const segments = reducedDetail ? 48 : 64
 
-      const mix = Math.random()
-      const c = grey.clone().lerp(mix > 0.55 ? green : blue, mix)
-      colors[i * 3] = c.r
-      colors[i * 3 + 1] = c.g
-      colors[i * 3 + 2] = c.b
-    }
-
-    return { positions, colors }
-  }, [count])
-
-  useFrame((state) => {
-    const pts = pointsRef.current
-    if (!pts) return
-    pts.rotation.y = state.clock.elapsedTime * 0.12
-    pts.rotation.x = Math.sin(state.clock.elapsedTime * 0.18) * 0.12
-
-    if (materialRef.current) {
-      const t = (Math.sin(state.clock.elapsedTime * 0.4) + 1) / 2
-      materialRef.current.opacity = 0.55 + t * 0.35
+  useFrame((_, delta) => {
+    if (!group.current) return
+    group.current.rotation.y += delta * 0.12
+    if (clouds.current) {
+      clouds.current.rotation.y += delta * 0.045
     }
   })
 
   return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        ref={materialRef}
-        size={0.028}
-        vertexColors
-        transparent
-        depthWrite={false}
-        sizeAttenuation
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
+    <group ref={group} rotation={[0.25, 0.4, 0]}>
+      {/* Planet */}
+      <mesh>
+        <sphereGeometry args={[1.55, segments, segments]} />
+        <meshStandardMaterial
+          map={colorMap}
+          bumpMap={bumpMap}
+          bumpScale={0.045}
+          roughness={0.72}
+          metalness={0.08}
+        />
+      </mesh>
+
+      {/* Soft cloud / haze shell */}
+      <mesh ref={clouds} scale={1.015}>
+        <sphereGeometry args={[1.55, segments, segments]} />
+        <meshStandardMaterial
+          color="#cfe8ff"
+          transparent
+          opacity={0.08}
+          depthWrite={false}
+          roughness={1}
+        />
+      </mesh>
+
+      {/* Atmosphere glow */}
+      <mesh scale={1.08}>
+        <sphereGeometry args={[1.55, 32, 32]} />
+        <meshBasicMaterial
+          color="#4ea8ff"
+          transparent
+          opacity={0.12}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Outer green rim for brand accent */}
+      <mesh scale={1.12}>
+        <sphereGeometry args={[1.55, 32, 32]} />
+        <meshBasicMaterial
+          color="#2E7D32"
+          transparent
+          opacity={0.07}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
   )
 }
 
-function InnerOrbits() {
+function OrbitRing() {
   const ring = useRef<THREE.Mesh>(null)
   useFrame((s) => {
-    if (ring.current) {
-      ring.current.rotation.z = s.clock.elapsedTime * 0.25
-      ring.current.rotation.x = Math.PI / 3
-    }
+    if (!ring.current) return
+    ring.current.rotation.z = s.clock.elapsedTime * 0.18
+    ring.current.rotation.x = Math.PI / 2.6
   })
   return (
     <mesh ref={ring}>
-      <torusGeometry args={[1.95, 0.008, 8, 100]} />
-      <meshBasicMaterial color="#2E7D32" transparent opacity={0.45} />
+      <torusGeometry args={[2.05, 0.006, 8, 120]} />
+      <meshBasicMaterial color="#2E7D32" transparent opacity={0.5} />
     </mesh>
   )
 }
 
-function Scene({ count }: { count: number }) {
+function Scene({ reducedDetail }: { reducedDetail: boolean }) {
   return (
     <>
-      <ambientLight intensity={0.4} />
-      <ParticleSphere count={count} />
-      <InnerOrbits />
+      <ambientLight intensity={0.45} />
+      <directionalLight position={[4, 2, 5]} intensity={1.55} color="#fff6e8" />
+      <directionalLight position={[-3, -1, -2]} intensity={0.35} color="#0B3D91" />
+      <Suspense fallback={null}>
+        <Earth reducedDetail={reducedDetail} />
+      </Suspense>
+      <OrbitRing />
     </>
   )
 }
@@ -95,7 +111,6 @@ function Scene({ count }: { count: number }) {
 export function ParticleGlobe({ className }: { className?: string }) {
   const isMobile = useIsMobile()
   const reduced = usePrefersReducedMotion()
-  const count = isMobile ? 900 : 2800
 
   if (reduced) {
     return (
@@ -104,7 +119,7 @@ export function ParticleGlobe({ className }: { className?: string }) {
         aria-hidden
         style={{
           background:
-            'radial-gradient(circle at 50% 50%, rgba(46,125,50,0.35), transparent 60%)',
+            'radial-gradient(circle at 50% 48%, rgba(78,168,255,0.35), rgba(46,125,50,0.2) 45%, transparent 68%)',
         }}
       />
     )
@@ -112,14 +127,24 @@ export function ParticleGlobe({ className }: { className?: string }) {
 
   return (
     <div className={className} aria-hidden>
-      <Suspense fallback={null}>
+      <Suspense
+        fallback={
+          <div
+            className="h-full w-full"
+            style={{
+              background:
+                'radial-gradient(circle at 50% 50%, rgba(78,168,255,0.28), transparent 60%)',
+            }}
+          />
+        }
+      >
         <Canvas
           dpr={[1, isMobile ? 1.5 : 2]}
-          camera={{ position: [0, 0, 4.2], fov: 45 }}
+          camera={{ position: [0, 0, 4.4], fov: 42 }}
           gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
           style={{ width: '100%', height: '100%' }}
         >
-          <Scene count={count} />
+          <Scene reducedDetail={isMobile} />
         </Canvas>
       </Suspense>
     </div>
