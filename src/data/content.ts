@@ -26,10 +26,10 @@ export const navLinks = [
 ]
 
 export const aboutStats = [
-  { value: 12, suffix: '+', label: 'Years of Excellence' },
-  { value: 850, suffix: '+', label: 'Clients Served' },
-  { value: 2.4, suffix: 'M', label: 'Tons Diverted', decimals: 1 },
-  { value: 98, suffix: '%', label: 'Client Retention' },
+  { value: 1, suffix: '+', label: 'Year of Excellence' },
+  { value: 18, suffix: '+', label: 'Clients Served' },
+  { value: 12, suffix: '+', label: 'Projects Delivered' },
+  { value: 850, suffix: 'T', label: 'Tons Diverted' },
 ]
 
 export const services = [
@@ -125,10 +125,10 @@ export const industries = [
 ]
 
 export const impactMetrics = [
-  { label: 'Landfill Diversion', value: 92, unit: '%' },
-  { label: 'Recycling Rate', value: 78, unit: '%' },
-  { label: 'Carbon Avoided', value: 65, unit: 'kT' },
-  { label: 'Water Saved', value: 84, unit: '%' },
+  { label: 'Landfill Diversion', value: 72, unit: '%' },
+  { label: 'Recycling Rate', value: 58, unit: '%' },
+  { label: 'Carbon Avoided', value: 12, unit: 'T' },
+  { label: 'Water Saved', value: 45, unit: '%' },
 ]
 
 export const whyUs = [

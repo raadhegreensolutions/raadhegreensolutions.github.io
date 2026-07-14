@@ -1,7 +1,8 @@
 import { useRef, Suspense, lazy } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { ArrowRight, Recycle, Leaf, Sparkles } from 'lucide-react'
+import { ArrowRight, Leaf, Sparkles } from 'lucide-react'
 import { MagneticButton } from '../components/ui/MagneticButton'
+import { BrandLogo } from '../components/BrandLogo'
 import { useIsMobile } from '../hooks/useMediaQuery'
 
 const ParticleGlobe = lazy(() =>
@@ -9,7 +10,6 @@ const ParticleGlobe = lazy(() =>
 )
 
 const floatingIcons = [
-  { Icon: Recycle, x: '12%', y: '28%', delay: 0.2 },
   { Icon: Leaf, x: '78%', y: '22%', delay: 0.45 },
   { Icon: Sparkles, x: '85%', y: '62%', delay: 0.65 },
 ]
@@ -93,15 +93,17 @@ export function Hero() {
 
       <div className="section-pad container-max relative z-20 w-full pt-28 pb-20">
         <div className="max-w-2xl">
-          <motion.p
-            className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary-light backdrop-blur"
+          <motion.div
+            className="mb-6"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-            Raadhe Green Solutions Pvt. Ltd.
-          </motion.p>
+            <BrandLogo
+              priority
+              className="h-36 w-auto rounded-2xl shadow-[0_12px_40px_rgba(212,175,55,0.22)] sm:h-44 md:h-52"
+            />
+          </motion.div>
 
           <motion.h1
             className="font-heading text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl"
