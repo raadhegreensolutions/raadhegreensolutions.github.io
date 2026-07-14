@@ -55,7 +55,7 @@ export function Hero() {
       />
 
       <motion.div
-        className="pointer-events-none absolute right-[-8%] top-1/2 h-[70vmin] w-[70vmin] -translate-y-1/2 opacity-90 md:right-[2%] md:h-[78vmin] md:w-[78vmin] lg:right-[5%]"
+        className="pointer-events-none absolute right-[-4%] top-1/2 aspect-square h-[min(88vmin,720px)] w-[min(88vmin,720px)] -translate-y-1/2 opacity-95 md:right-[0%] lg:right-[2%]"
         style={isMobile ? undefined : { x: parallaxX, y: parallaxY }}
       >
         <Suspense
