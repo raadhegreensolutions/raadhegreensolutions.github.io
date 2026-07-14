@@ -1,107 +1,12 @@
-import { useState, type FormEvent } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Mail, Phone } from 'lucide-react'
 import { contactInfo } from '../data/content'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { Reveal } from '../components/ui/Reveal'
-import { MagneticButton } from '../components/ui/MagneticButton'
-import clsx from 'clsx'
 
-function FloatingField({
-  id,
-  label,
-  type = 'text',
-  required,
-  value,
-  onChange,
-  rows,
-}: {
-  id: string
-  label: string
-  type?: string
-  required?: boolean
-  value: string
-  onChange: (v: string) => void
-  rows?: number
-}) {
-  const filled = value.length > 0
-  const Tag = rows ? 'textarea' : 'input'
-
-  return (
-    <div className="relative">
-      <Tag
-        id={id}
-        name={id}
-        type={rows ? undefined : type}
-        required={required}
-        rows={rows}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={clsx(
-          'peer w-full rounded-xl border border-white/12 bg-white/5 px-4 pt-5 pb-2 text-sm text-white outline-none transition-all',
-          'focus:border-primary/60 focus:bg-white/8 focus:shadow-[0_0_0_3px_rgba(46,125,50,0.2)]',
-          rows && 'resize-none',
-        )}
-        placeholder=" "
-      />
-      <label
-        htmlFor={id}
-        className={clsx(
-          'pointer-events-none absolute left-4 origin-left text-sm text-white/45 transition-all duration-200',
-          filled || undefined
-            ? 'top-2 scale-75 text-primary-light'
-            : 'top-3.5 peer-focus:top-2 peer-focus:scale-75 peer-focus:text-primary-light peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:text-primary-light',
-        )}
-      >
-        {label}
-      </label>
-    </div>
-  )
-}
-
-function SuccessCheck() {
-  return (
-    <motion.div
-      initial={{ scale: 0.6, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      className="flex flex-col items-center justify-center py-12 text-center"
-    >
-      <motion.div
-        className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-gradient"
-        initial={{ pathLength: 0 }}
-        animate={{ scale: [0.8, 1.08, 1] }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <motion.svg viewBox="0 0 24 24" className="h-10 w-10 text-white" fill="none">
-          <motion.path
-            d="M5 13l4 4L19 7"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.45, delay: 0.15 }}
-          />
-        </motion.svg>
-      </motion.div>
-      <h3 className="mt-6 font-heading text-2xl font-bold text-white">Message sent</h3>
-      <p className="mt-2 max-w-sm text-sm text-muted">
-        Thanks for reaching out. Our team will respond within one business day.
-      </p>
-    </motion.div>
-  )
-}
+const GOOGLE_FORM_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSemtorHe1AfbHNxDs7-T7vJ9ugiemUO17nMUOX-atRQui3o1Q/viewform?embedded=true'
 
 export function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', company: '', message: '' })
-  const [submitted, setSubmitted] = useState(false)
-
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    setSubmitted(true)
-  }
-
   return (
     <section id="contact" className="relative bg-charcoal py-24 md:py-32">
       <div className="section-pad container-max">
@@ -113,60 +18,21 @@ export function Contact() {
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
           <Reveal>
-            <div className="glass relative overflow-hidden rounded-3xl p-6 md:p-8">
-              <AnimatePresence mode="wait">
-                {submitted ? (
-                  <SuccessCheck />
-                ) : (
-                  <motion.form
-                    key="form"
-                    onSubmit={onSubmit}
-                    className="space-y-4"
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
-                    <FloatingField
-                      id="name"
-                      label="Full name"
-                      required
-                      value={form.name}
-                      onChange={(v) => setForm((f) => ({ ...f, name: v }))}
-                    />
-                    <FloatingField
-                      id="email"
-                      label="Work email"
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={(v) => setForm((f) => ({ ...f, email: v }))}
-                    />
-                    <FloatingField
-                      id="company"
-                      label="Organization"
-                      value={form.company}
-                      onChange={(v) => setForm((f) => ({ ...f, company: v }))}
-                    />
-                    <FloatingField
-                      id="message"
-                      label="How can we help?"
-                      required
-                      rows={4}
-                      value={form.message}
-                      onChange={(v) => setForm((f) => ({ ...f, message: v }))}
-                    />
-                    <MagneticButton type="submit" variant="primary" className="mt-2 w-full">
-                      Send Message
-                    </MagneticButton>
-                  </motion.form>
-                )}
-              </AnimatePresence>
+            <div className="glass overflow-hidden rounded-3xl p-2 sm:p-3 md:p-4">
+              <iframe
+                title="Contact Raadhe Green Solutions"
+                src={GOOGLE_FORM_URL}
+                className="h-[720px] w-full rounded-2xl bg-white sm:h-[780px] md:h-[826px]"
+                loading="lazy"
+              >
+                Loading…
+              </iframe>
             </div>
           </Reveal>
 
           <Reveal delay={0.12}>
             <div className="flex h-full flex-col gap-6">
               <div className="glass relative min-h-[260px] flex-1 overflow-hidden rounded-3xl">
-                {/* Interactive stylized map */}
                 <div
                   className="absolute inset-0"
                   style={{
