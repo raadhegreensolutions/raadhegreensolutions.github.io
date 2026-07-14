@@ -28,6 +28,14 @@ Open the local URL Vite prints (typically `http://localhost:5173`).
 | `npm run build`   | Production build         |
 | `npm run preview` | Preview production build |
 
+## GitHub Pages
+
+This is a **Vite/React** site (not Jekyll). Do **not** set Pages source to `/docs`.
+
+1. Push the workflow in `.github/workflows/deploy-pages.yml`.
+2. Repo **Settings → Pages → Build and deployment → Source**: choose **GitHub Actions**.
+3. Site URL: `https://raadhegreensolutions.github.io/raadhegreensolutions/`
+
 ## Sections
 
 Hero → About → Services → Process → Industries → Impact → Why Choose Us → Projects → Testimonials → Careers → Contact → Footer
